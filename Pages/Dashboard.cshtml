@@ -1,0 +1,242 @@
+﻿@page
+@model RecreaLearnAspNet.Pages.DashboardModel
+@using Microsoft.AspNetCore.Http
+
+@{
+    ViewData["Title"] = "Dashboard";
+
+    var userRole = HttpContext.Session.GetString("UserRole")
+                   ?? Model.Profile?.Role
+                   ?? "Learner";
+
+    var activeCourseIds = Model.Progress
+        .Select(x => x.CourseId)
+        .Distinct()
+        .ToHashSet();
+
+    var activeCourses = Model.Courses
+        .Where(x => activeCourseIds.Contains(x.Id))
+        .Take(3)
+        .ToList();
+
+    var applicationStatus = Model.InstructorApplication?.ApplicationStatus ?? "Not Applied";
+}
+
+<section class="profile-hero">
+    <div class="container profile-hero-inner">
+        <div class="profile-avatar-large">@Model.Initials()</div>
+
+        <div class="profile-info">
+            <span class="auth-kicker">@userRole Profile</span>
+            <h1>@Model.DisplayName()</h1>
+            <p>
+                Continue your learning journey, earn XP,
+                complete quests, and unlock Instructor eligibility.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="profile-page">
+    <div class="container">
+
+        @if (!string.IsNullOrWhiteSpace(Model.DatabaseMessage))
+        {
+            <div class="notice">@Model.DatabaseMessage</div>
+        }
+
+        @if (TempData["ApplyMessage"] != null)
+        {
+            <div class="notice success-notice">
+                @TempData["ApplyMessage"]
+            </div>
+        }
+
+        <div class="profile-stats-grid">
+            <div class="profile-stat-card">
+                <span>Courses</span>
+                <strong>@activeCourseIds.Count</strong>
+                <p>Learning journeys started</p>
+            </div>
+
+            <div class="profile-stat-card">
+                <span>Completed Quests</span>
+                <strong>@Model.CompletedLessons</strong>
+                <p>Lessons completed</p>
+            </div>
+
+            <div class="profile-stat-card">
+                <span>Total XP</span>
+                <strong>@Model.TotalXp</strong>
+                <p>Experience earned</p>
+            </div>
+        </div>
+
+        <section class="progression-panel">
+            <div>
+                <span class="progression-label">
+                    Learner-to-Instructor Progression
+                </span>
+
+                <h2>@Model.ProgressionRole</h2>
+
+                <p>
+                    RecreaLearn allows learners to become eligible
+                    for instructor role application based on XP earned,
+                    completed quests, learning participation, and
+                    admin approval.
+                </p>
+
+                <div class="progression-bar">
+                    <span style="width:@(Model.ProgressionPercent)%"></span>
+                </div>
+
+                <small>
+                    @Model.TotalXp / 1500 XP earned •
+                    @Model.CompletedLessons / 20 quests completed •
+                    Next: @Model.NextProgressionRole
+                </small>
+
+                @if (Model.ProgressionRole == "Ready for Instructor Review" &&
+                                Model.InstructorApplication?.RequestedInstructor != true &&
+                                Model.InstructorApplication?.ApplicationStatus != "Approved")
+                {
+                    <form method="post" asp-page-handler="ApplyInstructor" style="margin-top:20px;">
+                        <button type="submit" class="btn btn-primary">
+                            🚀 Apply as Instructor
+                        </button>
+                    </form>
+                }
+            </div>
+
+            <div class="progression-steps two-step">
+                <div class="active">
+                    Learner
+                </div>
+
+                <div class="@(Model.ProgressionRole == "Ready for Instructor Review" ? "active" : "")">
+                    Instructor Eligibility
+                </div>
+            </div>
+        </section>
+
+        <div class="profile-content-grid">
+
+            <article class="profile-panel">
+                <h2>My Courses</h2>
+
+                @if (activeCourses.Any())
+                {
+                    <div class="my-course-grid">
+                        @foreach (var course in activeCourses)
+                        {
+                            <a class="my-course-card"
+                               asp-page="/CourseDetail"
+                               asp-route-id="@course.Id">
+
+                                <img src="@course.ImageUrl"
+                                     alt="@course.Title" />
+
+                                <div class="my-course-body">
+                                    <h3>@course.Title</h3>
+                                    <p>@course.InstructorName</p>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="muted-text">
+                        Start a course to begin earning XP and unlocking achievements.
+                    </p>
+
+                    <a class="btn btn-primary"
+                       asp-page="/Courses">
+                        Browse Courses
+                    </a>
+                }
+            </article>
+
+            <aside class="profile-panel account-upgrade-card">
+                <div class="account-card-header">
+                    <div class="account-icon">
+                        @Model.Initials()
+                    </div>
+
+                    <div>
+                        <h2>Account Overview</h2>
+                        <p>Your learning identity and instructor application status.</p>
+                    </div>
+                </div>
+
+                <div class="account-info-list">
+                    <div class="account-info-item">
+                        <span>Email</span>
+                        <strong>
+                            @(Model.Profile?.Email ?? HttpContext.Session.GetString("UserEmail"))
+                        </strong>
+                    </div>
+
+                    <div class="account-info-item">
+                        <span>Current Role</span>
+                        <strong>@userRole</strong>
+                    </div>
+
+                    <div class="account-info-item">
+                        <span>Member Since</span>
+                        <strong>
+                            @((Model.Profile?.CreatedAt ?? DateTime.UtcNow).ToString("MMMM yyyy"))
+                        </strong>
+                    </div>
+
+                    <div class="account-info-item">
+                        <span>Instructor Status</span>
+                        <strong>@applicationStatus</strong>
+                    </div>
+                </div>
+
+                @if (Model.InstructorApplication?.ApplicationStatus == "Denied")
+                {
+                    <div class="application-message denied">
+                        <strong>Application Denied</strong>
+                        <p>@Model.InstructorApplication.AdminFeedback</p>
+
+                        <form method="post" asp-page-handler="ApplyInstructor" style="margin-top:14px;">
+                            <button type="submit" class="btn btn-primary">
+                                Re-Apply After Improvement
+                            </button>
+                        </form>
+                    </div>
+                }
+                else if (Model.InstructorApplication?.ApplicationStatus == "Approved")
+                {
+                    <div class="application-message approved">
+                        <strong>Application Approved</strong>
+                        <p>You can now access Instructor Studio and submit your own courses.</p>
+
+                        <a class="btn btn-primary" asp-page="/InstructorDashboard">
+                            Go to Instructor Studio
+                        </a>
+                    </div>
+                }
+                else if (Model.InstructorApplication?.RequestedInstructor == true)
+                {
+                    <div class="application-message pending">
+                        <strong>Application Pending</strong>
+                        <p>Your instructor application is waiting for admin review.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="application-message pending">
+                        <strong>No Instructor Application Yet</strong>
+                        <p>Reach the eligibility requirement and apply to become an instructor.</p>
+                    </div>
+                }
+            </aside>
+
+        </div>
+
+    </div>
+</section>

@@ -1,0 +1,35 @@
+@page
+@model RecreaLearnAspNet.Pages.RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<section class="auth-page">
+    <div class="auth-card">
+        <span class="auth-kicker">Start free</span>
+        <h1>Create your learner profile</h1>
+
+        <form method="post">
+            <label>Full Name</label>
+            <input asp-for="FullName" type="text" placeholder="Your full name" required />
+
+            <label>Email</label>
+            <input asp-for="Email" type="email" placeholder="you@example.com" required />
+
+            <label>Password</label>
+            <input asp-for="Password" type="password" placeholder="Password" required />
+
+            @if (!string.IsNullOrEmpty(Model.Message))
+            {
+                <div class="notice danger">@Model.Message</div>
+            }
+
+            <button class="btn btn-primary" type="submit">Create Account</button>
+        </form>
+
+        <p class="small">
+            Already have an account?
+            <a asp-page="/Login">Sign in</a>
+        </p>
+    </div>
+</section>

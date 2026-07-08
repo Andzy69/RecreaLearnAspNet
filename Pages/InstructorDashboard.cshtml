@@ -1,0 +1,134 @@
+﻿@page
+@model RecreaLearnAspNet.Pages.InstructorDashboardModel
+@{
+    ViewData["Title"] = "Instructor Dashboard";
+}
+
+<section class="instructor-hero">
+    <div class="container">
+        <div class="instructor-hero-top">
+            <div>
+                <h1>Instructor Dashboard</h1>
+                <p>Manage your courses and track your impact</p>
+            </div>
+
+            <a class="create-course-btn" asp-page="/UploadCourse">
+                <i class="fa-solid fa-plus"></i>
+                Create Course
+            </a>
+        </div>
+
+        <div class="instructor-stats-grid">
+            <div class="instructor-stat-card">
+                <i class="fa-solid fa-users"></i>
+                <div>
+                    <strong>@Model.TotalStudents</strong>
+                    <span>Total Students</span>
+                </div>
+            </div>
+
+            <div class="instructor-stat-card">
+                <i class="fa-solid fa-book-open"></i>
+                <div>
+                    <strong>@Model.TotalCourses</strong>
+                    <span>Active Courses</span>
+                </div>
+            </div>
+
+            <div class="instructor-stat-card">
+                <i class="fa-regular fa-star"></i>
+                <div>
+                    <strong>@Model.AvgRating.ToString("0.0")</strong>
+                    <span>Avg Rating</span>
+                </div>
+            </div>
+
+            <div class="instructor-stat-card">
+                <i class="fa-regular fa-comment"></i>
+                <div>
+                    <strong>@Model.PendingCourses</strong>
+                    <span>Pending Review</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="instructor-page">
+    <div class="container instructor-main-grid">
+
+        <div>
+            <div class="section-row">
+                <h2>My Courses</h2>
+                <a class="view-link" asp-page="/Courses">View All</a>
+            </div>
+
+            @if (Model.MyCourses.Any())
+            {
+                foreach (var course in Model.MyCourses)
+                {
+                    <div class="instructor-course-card">
+                        <img src="@course.ImageUrl" alt="@course.Title" />
+
+                        <div class="instructor-course-body">
+                            <h3>@course.Title</h3>
+                            <span class="published-badge">Published</span>
+
+                            <div class="course-mini-stats">
+                                <div>
+                                    <i class="fa-solid fa-users"></i>
+                                    <span>Students</span>
+                                    <strong>@course.StudentsCount</strong>
+                                </div>
+
+                                <div>
+                                    <i class="fa-regular fa-star"></i>
+                                    <span>Rating</span>
+                                    <strong>@course.Rating.ToString("0.0")</strong>
+                                </div>
+
+                                <div>
+                                    <i class="fa-regular fa-comment"></i>
+                                    <span>Reviews</span>
+                                    <strong>0</strong>
+                                </div>
+
+                                <div>
+                                    <i class="fa-solid fa-book-open"></i>
+                                    <span>Lessons</span>
+                                    <strong>6</strong>
+                                </div>
+                            </div>
+
+                            <div class="course-card-actions">
+                                <a class="outline-btn" asp-page="/CourseDetail" asp-route-id="@course.Id">Edit Course</a>
+                                <a class="outline-btn" href="#">View Analytics</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="instructor-empty">
+                    <h3>No courses uploaded yet</h3>
+                    <p>Create your first course and submit it to RecreLearn.</p>
+                    <a class="create-course-btn" asp-page="/UploadCourse">Create New Course</a>
+                </div>
+            }
+        </div>
+
+        <aside class="instructor-side-panel">
+            <h2>Quick Actions</h2>
+
+            <a class="quick-purple" asp-page="/UploadCourse">
+                <i class="fa-solid fa-plus"></i>
+                Create New Course
+            </a>
+
+            <a class="quick-white" href="#">Manage Content</a>
+            <a class="quick-white" href="#">View Messages</a>
+        </aside>
+
+    </div>
+</section>

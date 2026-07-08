@@ -1,0 +1,86 @@
+@page
+@model RecreaLearnAspNet.Pages.CoursesModel
+@{
+    ViewData["Title"] = "Browse Courses";
+    var categories = new[] { "All", "Arts", "Cooking", "Fitness", "Photography", "Music", "Language" };
+}
+
+<section class="browse-top">
+    <div class="container">
+        <h1>Browse Courses</h1>
+
+        <form method="get" class="browse-search-row">
+            <div class="search-box">
+                <span>⌕</span>
+                <input type="text"
+                       name="search"
+                       value="@Model.Search"
+                       placeholder="Search courses..." />
+            </div>
+
+            <input type="hidden" name="category" value="@Model.SelectedCategory" />
+            <input type="hidden" name="level" value="@Model.Level" />
+
+            <button type="submit" class="filter-btn">
+                ⧉ Filters
+            </button>
+        </form>
+    </div>
+</section>
+
+<section class="category-tabs-wrap">
+    <div class="container">
+        <div class="category-tabs">
+            @foreach (var category in categories)
+            {
+                <a class="category-tab @(Model.SelectedCategory == category ? "active" : "")"
+                   asp-page="/Courses"
+                   asp-route-category="@category"
+                   asp-route-search="@Model.Search"
+                   asp-route-level="@Model.Level">
+                    @category
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="catalog-section">
+    <div class="container">
+
+        @if (!string.IsNullOrWhiteSpace(Model.DatabaseMessage))
+        {
+            <div class="notice">@Model.DatabaseMessage</div>
+        }
+
+        <p class="found">@Model.Courses.Count courses found</p>
+
+        <div class="catalog-grid">
+            @foreach (var course in Model.Courses)
+            {
+                <a class="catalog-card" asp-page="/CourseDetail" asp-route-id="@course.Id">
+                    <div class="catalog-image">
+                        <img src="@course.ImageUrl" alt="@course.Title" />
+                        <span class="level-pill">@course.Level</span>
+                    </div>
+
+                    <div class="catalog-body">
+                        <div class="course-tags">
+                            <span>@Model.GetCategoryName(course.CategoryId)</span>
+                            <small>6 lessons</small>
+                        </div>
+
+                        <h3>@course.Title</h3>
+                        <p>@course.InstructorName</p>
+                        <p class="course-card-desc">@course.Description</p>
+
+                        <div class="course-meta">
+                            <span class="rating-star">★ @course.Rating.ToString("0.0")</span>
+                            <span>@course.StudentsCount.ToString("N0")</span>
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+</section>

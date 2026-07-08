@@ -1,0 +1,170 @@
+﻿@page
+@model RecreaLearnAspNet.Pages.UploadCourseModel
+@{
+    ViewData["Title"] = "Upload Course";
+}
+
+<section class="course-builder-page">
+    <div class="container">
+
+        <div class="builder-header">
+            <div>
+                <span class="builder-eyebrow">Instructor Studio</span>
+                <h1>Create New Course</h1>
+                <p>Build structured learning content with video, reading, activity, quiz, scenario challenge, and final project.</p>
+            </div>
+
+            <a asp-page="/InstructorDashboard" class="secondary-builder-btn">Back to Dashboard</a>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Message))
+        {
+            <div class="builder-alert">
+                @Model.Message
+            </div>
+        }
+
+        <form method="post" class="builder-form">
+
+            <div class="builder-layout">
+
+                <div class="builder-main">
+
+                    <div class="builder-card">
+                        <div class="builder-card-header">
+                            <span>Step 1</span>
+                            <h2>Course Information</h2>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label>Course Title</label>
+                                <input asp-for="Title" placeholder="Example: Beginner Guitar Essentials" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select asp-for="Category">
+                                    <option>Arts</option>
+                                    <option>Cooking</option>
+                                    <option>Fitness</option>
+                                    <option>Photography</option>
+                                    <option>Music</option>
+                                    <option>Language</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Level</label>
+                                <select asp-for="Level">
+                                    <option>Beginner</option>
+                                    <option>Intermediate</option>
+                                    <option>Advanced</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group full">
+                                <label>Course Image URL</label>
+                                <input asp-for="ImageUrl" placeholder="Paste image URL here" />
+                            </div>
+
+                            <div class="form-group full">
+                                <label>Description</label>
+                                <textarea asp-for="Description" rows="4" placeholder="Explain what learners will achieve after completing this course."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="builder-card">
+                        <div class="builder-card-header">
+                            <span>Step 2</span>
+                            <h2>Learning Materials</h2>
+                        </div>
+
+                        <div class="lesson-builder">
+                            <div class="lesson-icon video">1</div>
+                            <div>
+                                <h3>Video Lesson</h3>
+                                <p>Introduce the topic using video-based learning.</p>
+                                <input asp-for="Lesson1Title" placeholder="Lesson title" />
+                                <input asp-for="Lesson1VideoUrl" placeholder="YouTube embed URL" />
+                            </div>
+                        </div>
+
+                        <div class="lesson-builder">
+                            <div class="lesson-icon reading">2</div>
+                            <div>
+                                <h3>Reading Notes</h3>
+                                <p>Provide structured notes, explanation, examples, and key terms.</p>
+                                <input asp-for="Lesson2Title" placeholder="Lesson title" />
+                                <textarea asp-for="Lesson2Reading" rows="4" placeholder="Reading content"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="lesson-builder">
+                            <div class="lesson-icon activity">3</div>
+                            <div>
+                                <h3>Interactive Activity</h3>
+                                <p>Create a hands-on task to let learners practise.</p>
+                                <input asp-for="Lesson3Title" placeholder="Lesson title" />
+                                <textarea asp-for="Lesson3Activity" rows="4" placeholder="Activity instruction"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="lesson-builder">
+                            <div class="lesson-icon quiz">4</div>
+                            <div>
+                                <h3>Quiz</h3>
+                                <p>Add questions to test learner understanding.</p>
+                                <input asp-for="Lesson4Title" placeholder="Lesson title" />
+                                <textarea asp-for="Lesson4Quiz" rows="4" placeholder="Quiz questions"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="lesson-builder">
+                            <div class="lesson-icon scenario">5</div>
+                            <div>
+                                <h3>Scenario-Based Challenge</h3>
+                                <p>Give learners a real-world situation to solve.</p>
+                                <input asp-for="Lesson5Title" placeholder="Lesson title" />
+                                <textarea asp-for="Lesson5Scene" rows="4" placeholder="Scenario-based learning content"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="lesson-builder">
+                            <div class="lesson-icon project">6</div>
+                            <div>
+                                <h3>Final Project</h3>
+                                <p>Let learners apply everything they learned.</p>
+                                <input asp-for="Lesson6Title" placeholder="Lesson title" />
+                                <textarea asp-for="Lesson6Project" rows="4" placeholder="Final project instruction"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-builder-btn">
+                        Submit Course for Admin Review →
+                    </button>
+                </div>
+
+                <aside class="builder-sidebar">
+                    <div class="builder-card sticky-card">
+                        <h2>Course Quality Checklist</h2>
+
+                        <div class="checklist-item">✓ Clear course objective</div>
+                        <div class="checklist-item">✓ Minimum 6 structured lessons</div>
+                        <div class="checklist-item">✓ Practical activity included</div>
+                        <div class="checklist-item">✓ Quiz or assessment included</div>
+                        <div class="checklist-item">✓ Scenario challenge included</div>
+                        <div class="checklist-item">✓ Final project included</div>
+
+                        <div class="builder-note">
+                            Courses are reviewed by admin before being published to learners.
+                        </div>
+                    </div>
+                </aside>
+
+            </div>
+        </form>
+    </div>
+</section>

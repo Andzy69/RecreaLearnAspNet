@@ -1,0 +1,141 @@
+@using Microsoft.AspNetCore.Http
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - RecreLearn</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="topbar">
+        <div class="nav-container">
+            <a class="brand" asp-page="/Index">
+                <span class="brand-icon" aria-hidden="true">
+                    <i class="fa-solid fa-book-open"></i>
+                </span>
+                <span class="brand-name">RecreLearn</span>
+            </a>
+
+            <nav class="main-nav">
+                <a asp-page="/Index">Home</a>
+                <a asp-page="/Courses">Browse Courses</a>
+            </nav>
+
+            <div class="user-menu">
+                @{
+                    var userEmail = Context.Session.GetString("UserEmail");
+                    var userRole = Context.Session.GetString("UserRole") ?? "Learner";
+                    var userName = !string.IsNullOrEmpty(userEmail)
+                    ? userEmail.Split('@')[0]
+                    : "";
+                    var initials = string.IsNullOrWhiteSpace(userName)
+                    ? "RL"
+                    : string.Concat(userName.Split('.', '-', '_').Take(2).Select(x => char.ToUpperInvariant(x[0])));
+                }
+
+                @if (!string.IsNullOrEmpty(userEmail))
+                {
+                    <details class="profile-dropdown">
+                        <summary>
+                            <span class="avatar">@initials</span>
+                            <span class="profile-name">@userName</span>
+                        </summary>
+
+                        <div class="dropdown-menu">
+                            <div class="dropdown-header">
+                                <strong>@userName</strong>
+                                <small>@userRole</small>
+                            </div>
+
+                            @if (userRole == "Admin")
+                            {
+                                <a asp-page="/AdminDashboard">Admin Dashboard</a>
+                            }
+                            else if (userRole == "Instructor")
+                            {
+                                <a asp-page="/InstructorDashboard">Instructor Dashboard</a>
+                            }
+                            else
+                            {
+                                <a asp-page="/Dashboard">My Learning</a>
+                            }
+
+                            <form method="post" asp-page="/Logout">
+                                <button type="submit">Logout</button>
+                            </form>
+                        </div>
+                    </details>
+                }
+                else
+                {
+                    <a class="signin-btn" asp-page="/Login">Sign In</a>
+                }
+            </div>
+        </div>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div>
+                <a class="brand footer-brand" asp-page="/Index">
+                    <span class="brand-icon" aria-hidden="true">
+                        <i class="fa-solid fa-book-open"></i>
+                    </span>
+                    <span>RecreLearn</span>
+                </a>
+                <p>Master recreational skills with expert instructors. Free learning for everyone.</p>
+            </div>
+
+            <div>
+                <h4>Platform</h4>
+                <a asp-page="/Courses">Browse Courses</a>
+                <a asp-page="/Studio">Live Studio</a>
+
+                @if (userRole == "Admin")
+                {
+                    <a asp-page="/AdminDashboard">Admin Dashboard</a>
+                }
+                else if (userRole == "Instructor")
+                {
+                    <a asp-page="/InstructorDashboard">Instructor Dashboard</a>
+                }
+                else
+                {
+                    <a asp-page="/Dashboard">My Learning</a>
+                }
+
+                <a asp-page="/Register">Create Account</a>
+            </div>
+
+            <div>
+                <h4>Categories</h4>
+                <a asp-page="/Courses" asp-route-category="Arts">Arts</a>
+                <a asp-page="/Courses" asp-route-category="Cooking">Cooking</a>
+                <a asp-page="/Courses" asp-route-category="Fitness">Fitness</a>
+                <a asp-page="/Courses" asp-route-category="Photography">Photography</a>
+                <a asp-page="/Courses" asp-route-category="Music">Music</a>
+            </div>
+
+            <div>
+                <h4>About</h4>
+                <a href="#">About Us</a>
+                <a href="#">Contact</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </div>
+        </div>
+
+        <p class="copyright">© 2026 RecreLearn. All rights reserved. Free learning platform for recreational skills.</p>
+    </footer>
+</body>
+</html>

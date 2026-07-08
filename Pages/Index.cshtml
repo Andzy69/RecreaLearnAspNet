@@ -1,0 +1,75 @@
+@page
+@{
+    ViewData["Title"] = "Home";
+    var categories = SeedData.Categories;
+    var featured = SeedData.Courses.Take(3).ToList();
+}
+
+<section class="hero">
+    <div class="container hero-inner">
+        <span class="eyebrow">Learn what you love</span>
+        <h1>Learn Skills That <span>Bring Joy</span></h1>
+        <p>Discover fun and enjoying-led courses in cooking, photography, music, fitness, art, and language learning. Learn at your own pace and transform your passion.</p>
+        <div class="hero-actions">
+            <a class="btn btn-light" asp-page="/Courses">Get Started Free <span aria-hidden="true">→</span></a>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-heading center">
+            <h2>Explore by Category</h2>
+            <p>Find curated skill areas to fuel your creativity and personal growth.</p>
+        </div>
+
+        <div class="category-grid">
+            @foreach (var category in categories)
+            {
+                <a class="category-card" asp-page="/Courses" asp-route-category="@category.Name.Replace(" Learning", "")">
+                    <div class="category-icon @category.ColorClass">
+                        <i class="@category.Icon"></i>
+                    </div>
+                    <h3>@category.Name</h3>
+                    <p>@category.Description</p>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="section muted">
+    <div class="container">
+        <div class="section-row">
+            <div class="section-heading">
+                <h2>Featured Courses</h2>
+                <p>Handpicked by our editorial team</p>
+            </div>
+            <a class="view-link" asp-page="/Courses">View All <span aria-hidden="true">→</span></a>
+        </div>
+
+        <div class="course-grid">
+            @foreach (var course in featured)
+            {
+                <a class="catalog-card" asp-page="/CourseDetail" asp-route-id="@course.Id">
+                    <div class="catalog-image">
+                        <img src="@course.Image" alt="@course.Title" />
+                        <span class="level-pill">@course.Level</span>
+                    </div>
+                    <div class="catalog-body">
+                        <div class="course-tags">
+                            <span>@course.Category</span>
+                            <small>6 lessons</small>
+                        </div>
+                        <h3>@course.Title</h3>
+                        <p>@course.Instructor</p>
+                        <div class="course-meta">
+                            <span class="rating-star">★ @course.Rating.ToString("0.0")</span>
+                            <span>@course.Students.ToString("N0")</span>
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+</section>

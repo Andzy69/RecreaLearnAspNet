@@ -1,0 +1,798 @@
+@page "{courseId:int}"
+@model RecreaLearnAspNet.Pages.LessonModel
+
+<section class="learning-room">
+
+    <aside class="learning-sidebar">
+        <a class="back-dashboard" asp-page="/Dashboard">← Back to Dashboard</a>
+
+        <div class="course-side-info">
+            <h2>@Model.CourseTitle</h2>
+            <p>@Model.Course?.InstructorName</p>
+
+            <div class="rank-card">
+                <span>Current Rank</span>
+                <strong>🏅 @Model.LearnerRank</strong>
+
+                <div class="rank-progress-line">
+                    <span style="width:@Model.RankProgress%"></span>
+                </div>
+
+                <small>@Model.TotalXp XP • Next: @Model.NextRank</small>
+            </div>
+
+            <div class="side-progress-row">
+                <span>Skill Journey Progress</span>
+                <strong>@Model.ProgressPercent%</strong>
+            </div>
+
+            <div class="side-progress-line">
+                <span style="width:@Model.ProgressPercent%"></span>
+            </div>
+
+            <small>@Model.CompletedCount of @Model.Lessons.Count lessons completed</small>
+        </div>
+
+        <div class="lesson-menu-group">
+            <h3>Course Lessons</h3>
+            <div class="module-label">🌟 Stage 1: Discover & Learn</div>
+
+            @foreach (var menuLesson in Model.Lessons)
+            {
+                if (menuLesson.LessonOrder == 5)
+                {
+                    <div class="module-label">🌍 Stage 2: Real-World Mission</div>
+                }
+
+                var isActive = Model.CurrentLesson != null && Model.CurrentLesson.Id == menuLesson.Id;
+                var isDone = Model.CompletedLessonIds.Contains(menuLesson.Id);
+                var isLocked = Model.IsLocked(menuLesson);
+
+                if (isLocked)
+                {
+                    <div class="lesson-menu-item locked">
+                        <div class="lesson-menu-icon">🔒</div>
+                        <div>
+                            <strong>@menuLesson.Title</strong>
+                            <span>Locked</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <a class="lesson-menu-item @(isActive ? "active" : "") @(isDone ? "done" : "")"
+                       asp-page="/Lesson"
+                       asp-route-courseId="@menuLesson.CourseId"
+                       asp-route-lessonId="@menuLesson.Id">
+                        <div class="lesson-menu-icon">@(isDone ? "✓" : "▷")</div>
+                        <div>
+                            <strong>@menuLesson.Title</strong>
+                            <span>@menuLesson.XpReward XP</span>
+                        </div>
+                    </a>
+                }
+            }
+        </div>
+    </aside>
+
+    <main class="learning-content">
+        @if (Model.CurrentLesson != null)
+        {
+            var lesson = Model.CurrentLesson;
+            var lessonType = (lesson.LessonType ?? "").Trim().ToLower();
+
+            if (Model.CourseCompleted)
+            {
+                <div class="course-complete-banner">
+                    🎉 Congratulations! You have completed this course.
+                </div>
+            }
+
+        <div class="learning-header upgraded-learning-header">
+            <span class="journey-pill">
+                @(lesson.LessonOrder == 1 ? "🌟 Discover" :
+                                lesson.LessonOrder == 2 ? "📚 Learn" :
+                                lesson.LessonOrder == 3 ? "🎯 Practice" :
+                                lesson.LessonOrder == 4 ? "🧠 Verify" :
+                                lesson.LessonOrder == 5 ? "🌍 Mission" :
+                                "🏆 Showcase")
+            </span>
+
+                <h1>@lesson.Title</h1>
+                <p>@Model.DisplayLessonDescription</p>
+
+                <div class="lesson-reward-row">
+                    <span>⚡ @lesson.XpReward XP Reward</span>
+                    <span>🏅 Badge Progress</span>
+                    <span>📈 Counts toward instructor eligibility</span>
+                </div>
+            </div>
+
+            <div class="content-card skill-experience-card">
+                <div class="skill-experience-top">
+                    <div>
+                        <span class="journey-pill">@Model.SkillTrackName</span>
+                        <h2>@Model.GetStageName(lesson.LessonOrder): Learning Experience</h2>
+                        <p>@Model.GetLearningGoal()</p>
+                    </div>
+                </div>
+
+                <div class="experience-grid">
+                    <div class="experience-box">
+                        <strong>🎯 Learning Goal</strong>
+                        <p>@Model.GetLearningGoal()</p>
+                    </div>
+
+                    <div class="experience-box">
+                        <strong>💡 Pro Tip</strong>
+                        <p>@Model.GetProTip()</p>
+                    </div>
+
+                    <div class="experience-box">
+                        <strong>🧩 Mini Mission</strong>
+                        <p>@Model.GetMiniMission()</p>
+                    </div>
+                </div>
+
+                <div class="success-checklist">
+                    <h3>Success Checklist</h3>
+                    <ul>
+                        <li>Understand the main concept of this lesson.</li>
+                        <li>Complete the practice task or checkpoint.</li>
+                        <li>Write a short reflection on what you learned.</li>
+                        <li>Earn XP toward learner-to-instructor progression.</li>
+                    </ul>
+                </div>
+            </div>
+
+            @if (lessonType == "video")
+            {
+                <div class="content-card">
+                    @if (!string.IsNullOrWhiteSpace(lesson.VideoUrl))
+                    {
+                        <iframe class="lesson-video"
+                                width="80%"
+                                height="520"
+                                src="@lesson.VideoUrl"
+                                title="@lesson.Title"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                        </iframe>
+                    }
+                    else
+                    {
+                        <div class="video-placeholder">
+                            <div class="play-circle">▶</div>
+                            <h2>Course Introduction Video</h2>
+                            <p>@lesson.LearningContent</p>
+                        </div>
+                    }
+
+                    <div class="article-section">
+                        <h2>What You Will Learn</h2>
+                        <p>@lesson.LearningContent</p>
+                    </div>
+                </div>
+            }
+            else if (lessonType == "reading")
+            {
+                <div class="article-layout">
+
+                    <div class="content-card article-section">
+                        <h2>@lesson.SectionTitle1</h2>
+                        @Html.Raw(lesson.SectionBody1)
+
+                        @if (lesson.SectionTitle1 == "Understanding Exposure")
+                        {
+                            <div class="article-table-box">
+                                <h3>Important Rule:</h3>
+                                <p>A smaller f-number means a larger opening.</p>
+
+                                <table class="article-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Aperture</th>
+                                            <th>Opening Size</th>
+                                            <th>Light Entering</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>f/1.8</td><td>Very Wide</td><td>Lots of Light</td></tr>
+                                        <tr><td>f/2.8</td><td>Wide</td><td>More Light</td></tr>
+                                        <tr><td>f/8</td><td>Medium</td><td>Moderate Light</td></tr>
+                                        <tr><td>f/16</td><td>Small</td><td>Less Light</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(lesson.SectionImage1))
+                        {
+                            <img src="@lesson.SectionImage1" class="article-image" />
+                        }
+                    </div>
+
+                    <div class="content-card article-section">
+                        <h2>@lesson.SectionTitle2</h2>
+                        @Html.Raw(lesson.SectionBody2)
+
+                        @if (!string.IsNullOrWhiteSpace(lesson.SectionImage2))
+                        {
+                            <img src="@lesson.SectionImage2" class="article-image" />
+                        }
+                    </div>
+
+                    <div class="content-card article-section">
+                        <h2>@lesson.SectionTitle3</h2>
+                        @Html.Raw(lesson.SectionBody3)
+
+                        @if (!string.IsNullOrWhiteSpace(lesson.SectionImage3))
+                        {
+                            <img src="@lesson.SectionImage3" class="article-image" />
+                        }
+                    </div>
+
+                    <div class="content-card article-section">
+                        <h2>@lesson.SectionTitle4</h2>
+                        @Html.Raw(lesson.SectionBody4)
+
+                        @if (!string.IsNullOrWhiteSpace(lesson.SectionImage4))
+                        {
+                            <img src="@lesson.SectionImage4" class="article-image" />
+                        }
+                    </div>
+
+                </div>
+            }
+            else if (lessonType == "interactive" || lessonType == "activity")
+            {
+                <div class="content-card">
+                    <h2>🎯 Activity</h2>
+                    <p>@lesson.ActivityPrompt</p>
+
+                    <div class="activity-match">
+                        <div class="activity-row">
+                            <strong>@lesson.ActivityItem1</strong>
+                            <select class="activity-select">
+                                <option value="">Choose Answer</option>
+                                <option>@lesson.ActivityAnswer1</option>
+                                <option>@lesson.ActivityAnswer2</option>
+                                <option>@lesson.ActivityAnswer3</option>
+                            </select>
+                        </div>
+
+                        <div class="activity-row">
+                            <strong>@lesson.ActivityItem2</strong>
+                            <select class="activity-select">
+                                <option value="">Choose Answer</option>
+                                <option>@lesson.ActivityAnswer1</option>
+                                <option>@lesson.ActivityAnswer2</option>
+                                <option>@lesson.ActivityAnswer3</option>
+                            </select>
+                        </div>
+
+                        <div class="activity-row">
+                            <strong>@lesson.ActivityItem3</strong>
+                            <select class="activity-select">
+                                <option value="">Choose Answer</option>
+                                <option>@lesson.ActivityAnswer1</option>
+                                <option>@lesson.ActivityAnswer2</option>
+                                <option>@lesson.ActivityAnswer3</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="button" class="check-activity-btn" onclick="checkActivity()">
+                        Check Answers
+                    </button>
+
+                    <div id="activityResult" class="feedback-card" style="display:none;"></div>
+                </div>
+
+                <script>
+                    function checkActivity() {
+                        const selects = document.querySelectorAll('.activity-select');
+                        const correct = [
+                            "@lesson.ActivityAnswer1",
+                            "@lesson.ActivityAnswer2",
+                            "@lesson.ActivityAnswer3"
+                        ];
+
+                        let score = 0;
+
+                        selects.forEach((s, index) => {
+                            if (s.value === correct[index]) {
+                                score++;
+                            }
+                        });
+
+                        const result = document.getElementById('activityResult');
+                        result.style.display = 'block';
+
+                        if (score === 3) {
+                            result.className = "feedback-card success-feedback";
+                            result.innerHTML = "✅ Perfect! All answers are correct.";
+                        } else {
+                            result.className = "feedback-card error-feedback";
+                            result.innerHTML = "❌ You got " + score + "/3 correct. Try again.";
+                        }
+                    }
+                </script>
+            }
+            else if (lessonType == "scenario")
+            {
+                <div class="content-card mission-card">
+
+                    <div class="mission-header">
+                        <h2>🎮 Challenge</h2>
+                        <p>@lesson.ActivityPrompt</p>
+
+                        <div class="mission-score">
+                            Score:
+                            <span id="liveScore">0</span>/3
+                        </div>
+                    </div>
+
+                    <div class="mission-scene" data-correct="@lesson.ActivityAnswer1">
+
+                        @if (!string.IsNullOrWhiteSpace(lesson.SectionImage1))
+                        {
+                            <img src="@lesson.SectionImage1" class="mission-image" />
+                        }
+
+                        <div class="scene-badge">Scene 1</div>
+
+                        <h3>@lesson.ActivityItem1</h3>
+
+                        <div class="mission-options">
+                            <button type="button" class="mission-option">@lesson.ActivityAnswer1</button>
+                            <button type="button" class="mission-option">@lesson.ActivityAnswer2</button>
+                            <button type="button" class="mission-option">@lesson.ActivityAnswer3</button>
+                        </div>
+                    </div>
+
+                    <div class="mission-scene" data-correct="@lesson.ActivityAnswer2">
+
+                        @if (!string.IsNullOrWhiteSpace(lesson.SectionImage2))
+                        {
+                            <img src="@lesson.SectionImage2" class="mission-image" />
+                        }
+
+                        <div class="scene-badge">Scene 2</div>
+
+                        <h3>@lesson.ActivityItem2</h3>
+
+                        <div class="mission-options">
+                            <button type="button" class="mission-option">@lesson.ActivityAnswer1</button>
+                            <button type="button" class="mission-option">@lesson.ActivityAnswer2</button>
+                            <button type="button" class="mission-option">@lesson.ActivityAnswer3</button>
+                        </div>
+                    </div>
+
+                    <div class="mission-scene" data-correct="@lesson.ActivityAnswer3">
+
+                        @if (!string.IsNullOrWhiteSpace(lesson.SectionImage3))
+                        {
+                            <img src="@lesson.SectionImage3" class="mission-image" />
+                        }
+
+                        <div class="scene-badge">Scene 3</div>
+
+                        <h3>@lesson.ActivityItem3</h3>
+
+                        <div class="mission-options">
+                            <button type="button" class="mission-option">@lesson.ActivityAnswer1</button>
+                            <button type="button" class="mission-option">@lesson.ActivityAnswer2</button>
+                            <button type="button" class="mission-option">@lesson.ActivityAnswer3</button>
+                        </div>
+                    </div>
+
+                    <div id="missionResult"
+                         class="feedback-card"
+                         style="display:none;">
+                    </div>
+
+                </div>
+
+                <script>
+                    let missionScore = 0;
+                    let completedScenes = 0;
+
+                    document.querySelectorAll(".mission-scene").forEach(scene => {
+
+                        const correct = scene.dataset.correct;
+
+                        scene.querySelectorAll(".mission-option").forEach(button => {
+
+                            button.addEventListener("click", function () {
+
+                                if (scene.classList.contains("answered"))
+                                    return;
+
+                                scene.classList.add("answered");
+
+                                completedScenes++;
+
+                                if (this.innerText.trim() === correct.trim()) {
+
+                                    this.classList.add("correct-answer");
+
+                                    missionScore++;
+
+                                    document.getElementById("liveScore").innerText = missionScore;
+
+                                } else {
+
+                                    this.classList.add("wrong-answer");
+
+                                    scene.querySelectorAll(".mission-option")
+                                        .forEach(btn => {
+
+                                            if (btn.innerText.trim() === correct.trim()) {
+                                                btn.classList.add("correct-answer");
+                                            }
+                                        });
+                                }
+
+                                if (completedScenes === 3) {
+
+                                    const result =
+                                        document.getElementById("missionResult");
+
+                                    result.style.display = "block";
+
+                                    if (missionScore === 3) {
+
+                                        result.className =
+                                            "feedback-card success-feedback";
+
+                                        result.innerHTML =
+                                            "🏆 Perfect Mission Clear! 3/3 correct.";
+
+                                    }
+                                    else if (missionScore === 2) {
+
+                                        result.className =
+                                            "feedback-card success-feedback";
+
+                                        result.innerHTML =
+                                            "⭐ Great Job! 2/3 correct.";
+
+                                    }
+                                    else {
+
+                                        result.className =
+                                            "feedback-card error-feedback";
+
+                                        result.innerHTML =
+                                            "⚠️ Mission Score: " +
+                                            missionScore +
+                                            "/3. Review the highlighted answers.";
+                                    }
+                                }
+                            });
+                        });
+                    });
+                </script>
+            }
+            else if (lessonType == "project")
+            {
+                <div class="article-layout">
+
+                    <div class="content-card article-section">
+                        <h2>@lesson.SectionTitle1</h2>
+                        @Html.Raw(lesson.SectionBody1)
+                    </div>
+
+                    <div class="content-card article-section">
+                        <h2>@lesson.SectionTitle2</h2>
+                        @Html.Raw(lesson.SectionBody2)
+                    </div>
+
+                    <div class="content-card article-section">
+                        <h2>@lesson.SectionTitle3</h2>
+                        @Html.Raw(lesson.SectionBody3)
+                    </div>
+
+                    <div class="content-card upload-box">
+
+                        <h2>🎨 Submit Your Artwork</h2>
+
+                        <p>
+                            Upload the artwork you created for this project.
+                        </p>
+
+                        <input type="file"
+                               id="artworkUpload"
+                               name="ArtworkFile"
+                               accept=".png,.jpg,.jpeg"
+                               class="form-control" />
+
+                        <div id="previewContainer" style="display:none;margin-top:20px;">
+                            <img id="previewImage"
+                                 style="max-width:100%;
+                                    border-radius:16px;
+                                    border:1px solid #ddd;" />
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <script>
+                    const upload =
+                        document.getElementById("artworkUpload");
+
+                    if (upload) {
+
+                        upload.addEventListener("change", function () {
+
+                            const file = this.files[0];
+
+                            if (!file) return;
+
+                            const reader = new FileReader();
+
+                            reader.onload = function (e) {
+
+                                document.getElementById("previewContainer")
+                                    .style.display = "block";
+
+                                document.getElementById("previewImage")
+                                    .src = e.target.result;
+                            };
+
+                            reader.readAsDataURL(file);
+                        });
+                    }
+                </script>
+            }
+            else if (lessonType == "quiz" || lessonType == "critique")
+            {
+                <div class="content-card pro-quiz-card">
+                    <div class="pro-quiz-header">
+                        <div>
+                            <span class="quiz-badge">
+                                @(lessonType == "critique" ? "Critique Challenge" : "Checkpoint Quiz")
+                            </span>
+                            <h2>@(lessonType == "critique" ? "🏆 Skill Critique Challenge" : "🧠 Knowledge Check")</h2>
+                            <p>
+                                Answer each question to test your understanding. You must score at least 2/3 to complete this lesson.
+                            </p>
+                        </div>
+
+                        <div class="quiz-xp-box">
+                            <strong>+@lesson.XpReward XP</strong>
+                            <span>Quiz Reward</span>
+                        </div>
+                    </div>
+
+                    <div class="quiz-progress-wrap">
+                        <div class="quiz-progress-info">
+                            <span id="quizCounter">Question 1 of 3</span>
+                            <span id="quizLiveScore">Score: 0</span>
+                        </div>
+
+                        <div class="quiz-progress-bar">
+                            <span id="quizProgressBar" style="width:33%"></span>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question-box active" data-question="1">
+                        <h3>@lesson.QuizQuestion</h3>
+
+                        <button type="button" class="quiz-option" data-answer="A">
+                            <span>A</span> @lesson.QuizOptionA
+                        </button>
+
+                        <button type="button" class="quiz-option" data-answer="B">
+                            <span>B</span> @lesson.QuizOptionB
+                        </button>
+
+                        <button type="button" class="quiz-option" data-answer="C">
+                            <span>C</span> @lesson.QuizOptionC
+                        </button>
+                    </div>
+
+                    <div class="quiz-question-box" data-question="2" style="display:none;">
+                        <h3>@lesson.QuizQuestion2</h3>
+
+                        <button type="button" class="quiz-option" data-answer="A">
+                            <span>A</span> @lesson.QuizOption2A
+                        </button>
+
+                        <button type="button" class="quiz-option" data-answer="B">
+                            <span>B</span> @lesson.QuizOption2B
+                        </button>
+
+                        <button type="button" class="quiz-option" data-answer="C">
+                            <span>C</span> @lesson.QuizOption2C
+                        </button>
+                    </div>
+
+                    <div class="quiz-question-box" data-question="3" style="display:none;">
+                        <h3>@lesson.QuizQuestion3</h3>
+
+                        <button type="button" class="quiz-option" data-answer="A">
+                            <span>A</span> @lesson.QuizOption3A
+                        </button>
+
+                        <button type="button" class="quiz-option" data-answer="B">
+                            <span>B</span> @lesson.QuizOption3B
+                        </button>
+
+                        <button type="button" class="quiz-option" data-answer="C">
+                            <span>C</span> @lesson.QuizOption3C
+                        </button>
+                    </div>
+
+                    <div id="quizFeedback" class="quiz-feedback-box" style="display:none;"></div>
+
+                    <button type="button" class="btn btn-primary quiz-submit-btn" id="nextQuizBtn" disabled>
+                        Submit Answer →
+                    </button>
+                </div>
+            }
+
+            <div class="content-card try-card">
+                <div>
+                    <span class="try-label">Try It Yourself</span>
+                    <h2>Apply this skill in real life</h2>
+                    <p>
+                        Complete a small practical task based on this lesson. This makes your learning more hands-on,
+                        portfolio-based, and different from normal video-only courses.
+                    </p>
+
+                    <div class="try-task-box">
+                        @if (lesson.LessonType.ToLower() == "video")
+                        {
+                            <strong>Task:</strong>
+                            <p>Write down 3 key things you learned from the introduction video.</p>
+                        }
+                        else if (lesson.LessonType.ToLower() == "reading")
+                        {
+                            <strong>Task:</strong>
+                            <p>Create one simple example using the concept you just learned.</p>
+                        }
+                        else if (lesson.LessonType.ToLower() == "interactive" || lesson.LessonType.ToLower() == "activity")
+                        {
+                            <strong>Task:</strong>
+                            <p>Repeat the activity using your own real-life example.</p>
+                        }
+                        else if (lesson.LessonType.ToLower() == "quiz")
+                        {
+                            <strong>Task:</strong>
+                            <p>Review your quiz result and identify one topic you need to improve.</p>
+                        }
+                        else if (lesson.LessonType.ToLower() == "scenario")
+                        {
+                            <strong>Task:</strong>
+                            <p>Solve the mission like a real practitioner and explain your decision.</p>
+                        }
+                        else
+                        {
+                            <strong>Task:</strong>
+                            <p>Prepare your final showcase project and describe what skill you demonstrated.</p>
+                        }
+                    </div>
+
+                    <textarea class="reflection-box" placeholder="Write your short reflection here..."></textarea>
+                </div>
+            </div>
+
+            <form method="post"
+                  asp-page-handler="Complete"
+                  id="completeForm"
+                  enctype="multipart/form-data">
+                <input type="hidden" name="courseId" value="@lesson.CourseId" />
+                <input type="hidden" name="lessonId" value="@lesson.Id" />
+
+                @if (lessonType == "quiz" || lessonType == "critique")
+                {
+                    <button class="mark-complete-btn" id="completeBtn" type="submit" disabled>
+                        Complete the challenge first
+                    </button>
+                }
+                else
+                {
+                    <button class="mark-complete-btn" id="completeBtn" type="submit">
+                        Complete Lesson →
+                    </button>
+                }
+            </form>
+
+            @if (lessonType == "quiz" || lessonType == "critique")
+            {
+                <script>
+                    const correctAnswers = {
+                        1: "@lesson.CorrectOption",
+                        2: "@lesson.CorrectOption2",
+                        3: "@lesson.CorrectOption3"
+                    };
+
+                    let currentQuestion = 1;
+                    let selectedAnswer = "";
+                    let score = 0;
+
+                    const nextQuizBtn = document.getElementById("nextQuizBtn");
+                    const quizFeedback = document.getElementById("quizFeedback");
+                    const completeBtn = document.getElementById("completeBtn");
+                    const quizCounter = document.getElementById("quizCounter");
+                    const quizProgressBar = document.getElementById("quizProgressBar");
+
+                    document.querySelectorAll(".quiz-option").forEach(button => {
+                        button.addEventListener("click", function () {
+                            const parent = this.closest(".quiz-question-box");
+
+                            parent.querySelectorAll(".quiz-option").forEach(btn => {
+                                btn.classList.remove("selected-answer");
+                            });
+
+                            this.classList.add("selected-answer");
+                            selectedAnswer = this.dataset.answer;
+                            nextQuizBtn.disabled = false;
+                        });
+                    });
+
+                    nextQuizBtn.addEventListener("click", function () {
+                        if (selectedAnswer === "") return;
+
+                        if (selectedAnswer === correctAnswers[currentQuestion]) {
+                            score++;
+                        }
+
+                        if (currentQuestion < 3) {
+                            document.querySelector(`[data-question='${currentQuestion}']`).style.display = "none";
+
+                            currentQuestion++;
+                            selectedAnswer = "";
+
+                            document.querySelector(`[data-question='${currentQuestion}']`).style.display = "block";
+
+                            quizCounter.innerText = "Question " + currentQuestion + " of 3";
+                            quizProgressBar.style.width = ((currentQuestion / 3) * 100) + "%";
+
+                            nextQuizBtn.disabled = true;
+                        } else {
+                            quizFeedback.style.display = "block";
+
+                            if (score >= 2) {
+                                quizFeedback.className = "feedback-card success-feedback";
+                                quizFeedback.innerHTML = "✅ Challenge passed! You scored " + score + "/3.";
+                                completeBtn.disabled = false;
+                                completeBtn.innerText = "Complete Lesson →";
+                            } else {
+                                quizFeedback.className = "feedback-card error-feedback";
+                                quizFeedback.innerHTML = "❌ You scored " + score + "/3. <button type='button' onclick='location.reload()'>Try Again</button>";
+                                completeBtn.disabled = true;
+                            }
+
+                            nextQuizBtn.disabled = true;
+                            nextQuizBtn.innerText = "Challenge Completed";
+                        }
+                    });
+                </script>
+            }
+        }
+    </main>
+
+    <script>
+        function speakMandarin(text) {
+            if (!("speechSynthesis" in window)) {
+                alert("Sorry, your browser does not support text-to-speech.");
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "zh-CN";
+            utterance.rate = 0.75;
+            utterance.pitch = 1;
+
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
+
+</section>

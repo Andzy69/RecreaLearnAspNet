@@ -1,0 +1,139 @@
+@page "{id:long}"
+@model RecreaLearnAspNet.Pages.CourseDetailModel
+@{
+    ViewData["Title"] = Model.Course?.Title ?? "Course";
+    var course = Model.Course;
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.DatabaseMessage))
+{
+    <section class="section">
+        <div class="container">
+            <div class="notice">@Model.DatabaseMessage</div>
+        </div>
+    </section>
+}
+else if (course != null)
+{
+    <section class="course-detail-hero">
+        <div class="container detail-grid">
+            <div class="detail-copy">
+                <a class="back-link" asp-page="/Courses">Back to courses</a>
+                <div class="course-tags">
+                    <span>@Model.CategoryName</span>
+                    <small>@Model.Lessons.Count lessons</small>
+                </div>
+
+                <h1>@course.Title</h1>
+                <p>@course.Description</p>
+
+                <div class="detail-meta">
+                    <span>★ @course.Rating.ToString("0.0") rating</span>
+                    <span>@course.StudentsCount.ToString("N0") learners</span>
+                    <span>@course.Level</span>
+                    <span>By @course.InstructorName</span>
+                </div>
+
+                <a class="btn btn-primary"
+                   asp-page="/Lesson"
+                   asp-route-courseId="@course.Id">
+                    Start Learning
+                </a>
+
+                @if (!Model.IsLoggedIn)
+                {
+                    <p class="login-hint">You will be asked to sign in before the lesson opens.</p>
+                }
+            </div>
+
+            <img src="@course.ImageUrl" alt="@course.Title" />
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container lesson-preview-grid">
+            <article class="panel">
+                <h2>Your Learning Journey</h2>
+                <h3 class="journey-subtitle">@Model.GetJourneyTitle()</h3>
+
+                <ul class="check-list">
+                    @foreach (var point in Model.GetJourneyPoints())
+                    {
+                        <li>@point</li>
+                    }
+                </ul>
+
+             
+            </article>
+
+            <aside class="panel">
+                <h2>Learning Path</h2>
+
+                @if (Model.Lessons.Any())
+                {
+                    <div class="lesson-list-small">
+                        @foreach (var lesson in Model.Lessons)
+                        {
+                            <div>
+                                <strong>Quest @lesson.LessonOrder</strong>
+                                <span>@Model.GetStageName(lesson.LessonOrder)</span>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p>No lessons have been added for this course yet.</p>
+                }
+            </aside>
+        </div>
+    </section>
+    <section class="recrelearn-method-section">
+        <div class="method-header">
+            <span>RecreaLearn Method</span>
+            <h2>How This Course Helps You Learn Better</h2>
+            <p>
+                This course is designed as a structured skill journey that combines short lessons,
+                practice activities, checkpoint quizzes, real-world missions, and final showcase work.
+            </p>
+        </div>
+
+        <div class="method-grid">
+            <div class="method-card">
+                <div class="method-icon">🌟</div>
+                <h3>Discover</h3>
+                <p>Start with guided introductions and real examples so learners understand the purpose of each skill.</p>
+            </div>
+
+            <div class="method-card">
+                <div class="method-icon">📚</div>
+                <h3>Learn</h3>
+                <p>Study important concepts using beginner-friendly explanations, visual examples, and practical tips.</p>
+            </div>
+
+            <div class="method-card">
+                <div class="method-icon">🎯</div>
+                <h3>Practice</h3>
+                <p>Apply knowledge through activities, matching tasks, mini challenges, and guided exercises.</p>
+            </div>
+
+            <div class="method-card">
+                <div class="method-icon">🧠</div>
+                <h3>Verify</h3>
+                <p>Complete quizzes and checkpoints to test understanding before moving to advanced tasks.</p>
+            </div>
+
+            <div class="method-card">
+                <div class="method-icon">🌍</div>
+                <h3>Mission</h3>
+                <p>Solve realistic scenarios that connect learning with real recreational skill situations.</p>
+            </div>
+
+            <div class="method-card">
+                <div class="method-icon">🏆</div>
+                <h3>Showcase</h3>
+                <p>Finish with a final project that can be added to the learner portfolio.</p>
+            </div>
+        </div>
+    </section>
+}

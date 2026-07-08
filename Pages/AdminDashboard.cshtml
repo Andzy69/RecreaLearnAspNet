@@ -1,0 +1,214 @@
+﻿@page
+@model RecreaLearnAspNet.Pages.AdminDashboardModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<section class="admin-hero">
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+        <p>Manage users, learner-to-instructor applications, course approval, and platform analytics.</p>
+    </div>
+</section>
+
+<section class="admin-page">
+    <div class="container">
+
+        <div class="admin-stats-grid">
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon blue"><i class="fa-solid fa-users"></i></div>
+                <strong>@Model.TotalUsers</strong>
+                <span>Total Users</span>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon green"><i class="fa-solid fa-user-graduate"></i></div>
+                <strong>@Model.TotalLearners</strong>
+                <span>Learners</span>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon purple"><i class="fa-solid fa-chalkboard-user"></i></div>
+                <strong>@Model.TotalInstructors</strong>
+                <span>Instructors</span>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon teal"><i class="fa-solid fa-clock"></i></div>
+                <strong>@Model.PendingSubmissionsCount</strong>
+                <span>Pending Reviews</span>
+            </div>
+        </div>
+
+        <div class="admin-main-grid">
+            <div>
+
+                <h2>Pending Instructor Applications</h2>
+
+                <div class="admin-panel">
+                    @if (Model.InstructorApplications.Any())
+                    {
+                        @foreach (var app in Model.InstructorApplications)
+                        {
+                            var applicant = Model.Users.FirstOrDefault(x => x.Id == app.UserId);
+
+                            <div class="approval-item">
+                                <div>
+                                    <span class="approval-tag">Instructor Application</span>
+                                    <h3>@(applicant?.FullName ?? "Learner Applicant")</h3>
+                                    <p>@(applicant?.Email ?? app.UserId)</p>
+                                    <p class="muted-text">
+                                        @app.TotalXp XP •
+                                        @app.CompletedLessons completed quests •
+                                        @app.CompletedCourses completed courses •
+                                        @app.ParticipationPoints participation points
+                                    </p>
+                                </div>
+
+                                <div class="approval-actions">
+                                    <form method="post" asp-page-handler="ApproveInstructorApplication">
+                                        <input type="hidden" name="id" value="@app.Id" />
+                                        <input type="hidden" name="userId" value="@app.UserId" />
+                                        <button class="approve-btn" type="submit">
+                                            Approve Instructor
+                                        </button>
+                                    </form>
+
+                                    <form method="post" asp-page-handler="DenyInstructorApplication">
+                                        <input type="hidden" name="id" value="@app.Id" />
+                                        <button class="reject-btn" type="submit">
+                                            Deny
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="muted-text">No pending instructor applications yet.</p>
+                    }
+                </div>
+
+                <h2 class="admin-section-title">Pending Instructor Course Submissions</h2>
+
+                <div class="admin-panel">
+                    @if (Model.PendingSubmissions.Any())
+                    {
+                        @foreach (var item in Model.PendingSubmissions)
+                        {
+                            <div class="approval-item">
+                                <div>
+                                    <span class="approval-tag">@item.Category</span>
+                                    <h3>@item.Title</h3>
+                                    <p>@item.InstructorName • @item.Level</p>
+                                    <p class="muted-text">@item.Description</p>
+                                </div>
+
+                                <div class="approval-actions">
+                                    <form method="post" asp-page-handler="ApproveSubmission">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button class="approve-btn" type="submit">Approve</button>
+                                    </form>
+
+                                    <form method="post" asp-page-handler="RejectSubmission">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button class="reject-btn" type="submit">Reject</button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="muted-text">No pending instructor course submissions yet.</p>
+                    }
+                </div>
+
+                <h2 class="admin-section-title">User Management</h2>
+
+                <div class="admin-panel">
+                    @foreach (var user in Model.Users)
+                    {
+                        <div class="approval-item">
+                            <div>
+                                <span class="approval-tag">@user.Role</span>
+                                <h3>@user.FullName</h3>
+                                <p>@user.Email</p>
+                            </div>
+
+                            <div class="approval-actions">
+                                @if (user.Role == "Learner")
+                                {
+                                    <form method="post" asp-page-handler="PromoteUser">
+                                        <input type="hidden" name="userId" value="@user.Id" />
+                                        <button class="approve-btn" type="submit">
+                                            Promote to Instructor
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="muted-text">No action</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <aside>
+                <div class="admin-panel">
+                    <h2>Platform Analytics</h2>
+
+                    <div class="activity-item">
+                        <i class="fa-solid fa-book green-text"></i>
+                        <div>
+                            <strong>@Model.TotalCourses courses</strong>
+                            <p>Approved learning content</p>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <i class="fa-solid fa-users blue-text"></i>
+                        <div>
+                            <strong>@Model.TotalUsers users</strong>
+                            <p>Registered accounts</p>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <i class="fa-solid fa-user-graduate green-text"></i>
+                        <div>
+                            <strong>@Model.TotalLearners learners</strong>
+                            <p>Current learner accounts</p>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <i class="fa-solid fa-chalkboard-user blue-text"></i>
+                        <div>
+                            <strong>@Model.TotalInstructors instructors</strong>
+                            <p>Approved teaching accounts</p>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <i class="fa-solid fa-user-check green-text"></i>
+                        <div>
+                            <strong>@Model.InstructorApplications.Count applications</strong>
+                            <p>Pending instructor requests</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="system-health">
+                    <h2>System Health</h2>
+                    <p><span>Server Status</span><strong>Online</strong></p>
+                    <p><span>Database</span><strong>Connected</strong></p>
+                    <p><span>Role</span><strong>Admin</strong></p>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
