@@ -16,3 +16,7 @@ This project is a converted ASP.NET Core Razor Pages version of the uploaded Fig
 - Visual Studio 2022
 - ASP.NET and web development workload
 - .NET 8 SDK
+
+## Admin Details
+username:adminadmin@gmail.com
+pass: admin123456
